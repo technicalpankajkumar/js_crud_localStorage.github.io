@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>CRUD OPERATION</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+</head>
+<body>
+   <div class="container-fluid p-4">
+   	<div class="row border rounded">
+   		<div class="col-sm-2 bg-light">
+   			<h2 class="text-center">REGISTRATION FORM</h2>
+   			<hr/>
+   			<p>
+   				<form class="form" onsubmit="register(event)">
+                    <input type="hidden" name="hidden" id="hidden"/>
+   					Name :<input type="text" placeholder="Enter your full name" id="name" class="form-control mb-1"/>
+   					Email :<input type="email" placeholder="Enter your email" id="email" class="form-control mb-1"/>
+   					Mobile Number :<input type="number" placeholder="Enter your moible no." id="mobile" class="form-control mb-1"/>
+   					City :<input type="text" placeholder="Enter your city" id="city" class="form-control mb-1"/>
+   					Address :<input type="text" placeholder="Enter your full address" id="address" class="form-control mb-1"/>
+   					Pincode :<input type="text" placeholder="Enter your pin-code" id="pincode" class="form-control mb-1"/>
+   					Password :<input type="password" placeholder="Enter your password" id="password" class="form-control mb-1"/>
+   					<input type="file" id="file" class="form-control"/><br/>
+                    <input type="submit" id="submit" value="REGISTER" class="form-control btn btn-warning  text-white fw-bold"/>
+   					<input type="submit" id="update" value="UPDATE" class="form-control btn btn-warning  text-white fw-bold" style="display:none" />
+   				</form>
+   			</p>
+   		</div>
+   		<div class="col-sm-10 border rounded bg-light">
+   			<h2 class="text-center ">FORM DATA</h2>
+   			<hr/>
+   			<div class="row bg-white m-0 mb-2 rounded">
+   				<div class="col-sm-12 p-0" style="min-height: 600px;" id="divTable">
+   				</div>
+   			</div>
+   		</div>
+   	</div>
+   </div>
+
+   <script>
+        var registerUsers=JSON.parse(window.localStorage.getItem("Register_Data")) || []
+        var id=['#file','#name','#email','#mobile','#city','#address','#pincode','#password']
+   	    var keys=['file','name','email','mobile','city','address','pincode','password']
+   	    function register(event){
+            registerUser={}
+            if(event.submitter.id=='submit'){
+                id.map((data,index)=>{
+           	    		if($(data).type=='file'){
+                        var imageName=$(data).value.split('\\').pop();
+                        registerUser[keys[index]]= imageName;
+           	    		}
+           	    		else{
+           	    			registerUser[keys[index]]= $(data).value;
+           	    		}
+   	    	    })
+            registerUsers.push(registerUser)
+            }
+            else if(event.submitter.id=='update') 
+            {
+               let indexes=$('#hidden').value
+               console.log(indexes)
+               keys.map((data,index)=>{
+                    id='#'+data;
+                    registerUsers[indexes][data]=$(id).value
+                })
+                $('#submit').style.display='block'
+                $('#update').style.display='none'
+            }
+            window.localStorage.setItem('Register_Data',JSON.stringify(registerUsers))
+
+            bindTableData(registerUsers);
+
+            id.map((data)=>{
+            	$(data).value="";
+            })
+   	    	// console.log(registerUsers.length)
+             
+   	    	event.preventDefault();
+   	    	}
+           
+            function bindTableHead(){
+            	var title=['Sr.no','Name','File','Email','Mobile','City','Address','Pincode','Password','Action']
+                var head="<tr class='text-bg-dark'>"
+            	title.map((value)=>{
+                     head+=`<th>${value}</th>`
+                             
+            	})
+            	head+=`</tr>`
+            	return head;
+            }
+           function bindTableData(data){
+           	    var heading=bindTableHead();
+                var sr=1;
+            	var res=`<table class="table table-bordered" cellpadding="5"> ${heading}`
+            	data.map((value,index)=>{
+                    res+=`<tr>
+                            <td>${index+1}</td>
+                            <td>${value.name}</td>
+                            <td><img src=${value.file} height="50px"/></td>
+                            <td>${value.email}</td>
+                            <td>${value.mobile}</td>
+                            <td>${value.city}</td>
+                            <td>${value.address}</td>
+                            <td>${value.pincode}</td>
+                            <td>${value.password}</td>
+                            <td>
+                               <input type="button" value="Edit" id="edit" onclick="editData(this)" class="btn btn-warning"/>
+                               <input type="button" value="Delete" id="delete"  onclick="deleteData(this)" class="btn btn-danger"/>
+                            </td>
+                          </tr>`
+            	})
+            	res+=`</table>`
+            	createTable(res);
+            }
+            function createTable(res){
+            	
+            		$('#divTable').innerHTML=res
+            		// console.log(res)
+            }
+            window.load=bindTableData(registerUsers)
+            //update form data 
+            function editData(e){
+            	let edit=e.parentElement.parentElement.firstElementChild.innerText;
+                keys.map((data)=>{
+                    id='#'+data;
+                    if(id=='#file'){
+                        $(id).value=""
+                    }else{
+                        $(id).value=registerUsers[edit-1][data]
+                    }
+                })
+                bindTableHead()
+                $('#submit').style.display='none'
+                $('#update').style.display='block'
+                $('#hidden').value=edit-1;
+            }
+			
+			function deleteData(e){
+			    let deleteIndex=e.parentElement.parentElement.firstElementChild.innerText-1;
+				registerUsers.splice(deleteIndex,1)
+				bindTableData(registerUsers);
+                window.localStorage.setItem('Register_Data',JSON.stringify(registerUsers))
+
+			}
+
+   	    function $(element){
+   	    	return document.querySelector(element);
+   	    }
+   </script>
+</body>
+</html>
